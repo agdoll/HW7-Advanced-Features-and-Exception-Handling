@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-// New imports (HW 6)
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import edu.brooklyn.cisc3130.taskboard.dto.TaskRequest;
+import edu.brooklyn.cisc3130.taskboard.dto.TaskResponse;
 
 @RestController
 @RequestMapping("/api/tasks")
@@ -30,42 +32,60 @@ public class TaskController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks() {
+    public ResponseEntity<List<TaskResponse>> getAllTasks() {
         List<Task> tasks = taskService.getAllTasks();
-        return ResponseEntity.ok(tasks);
+        List<TaskResponse> response = tasks.stream()
+                .map(TaskResponse::fromEntity)
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable Integer id) {
-        Optional<Task> task = taskService.getTaskById(id);
-        return task.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Integer id) {
+        Task task = taskService.getTaskById(id);
+        return ResponseEntity.ok(TaskResponse.fromEntity(task));
     }
 
     @PostMapping
-    public ResponseEntity<Task> createTask(@Valid @RequestBody Task task) {
+    public ResponseEntity<TaskResponse> createTask(
+            @Valid @RequestBody TaskRequest taskRequest) {
+        Task task = new Task();
+        task.setTitle(taskRequest.getTitle());
+        task.setDescription(taskRequest.getDescription());
+        task.setCompleted(taskRequest.getCompleted() != null ? taskRequest.getCompleted() : false);
+        task.setPriority(Task.Priority.valueOf(
+                taskRequest.getPriority() != null ?
+                        taskRequest.getPriority().toUpperCase() : "MEDIUM"));
+
         Task createdTask = taskService.createTask(task);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(TaskResponse.fromEntity(createdTask));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(
+    public ResponseEntity<TaskResponse> updateTask(
             @PathVariable Integer id,
-            @Valid @RequestBody Task task) {
-        Optional<Task> updatedTask = taskService.updateTask(id, task);
-        return updatedTask.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+            @Valid @RequestBody TaskRequest taskRequest) {
+
+        Task task = new Task();
+        task.setTitle(taskRequest.getTitle());
+        task.setDescription(taskRequest.getDescription());
+        task.setCompleted(taskRequest.getCompleted());
+        task.setPriority(Task.Priority.valueOf(taskRequest.getPriority().toUpperCase()));
+
+        Task updated = taskService.updateTask(id, task);
+
+        return ResponseEntity.ok(TaskResponse.fromEntity(updated));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Integer id) {
-        boolean deleted = taskService.deleteTask(id);
-        return deleted ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+        taskService.deleteTask(id);
+        return ResponseEntity.noContent().build();
     }
 
     // Exception handler for validation errors
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    //@ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
@@ -121,4 +141,11 @@ public class TaskController {
         Page<Task> tasks = taskService.getAllTasks(pageable);
         return ResponseEntity.ok(tasks);
     }
+
+    @PutMapping("/{id}/restore")
+    public ResponseEntity<Void> restoreTask(@PathVariable Integer id) {
+        taskService.restoreTask(id);
+        return ResponseEntity.ok().build();
+    }
+
 }

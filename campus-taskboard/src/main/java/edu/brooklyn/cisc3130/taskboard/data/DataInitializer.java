@@ -18,17 +18,17 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         if (taskRepository.count() == 0) {
             taskRepository.save(new Task(
-                    null, "Complete Homework 6",
+                    null, false, "Complete Homework 6",
                     "Finish Spring Data JPA assignment",
                     false, Task.Priority.HIGH, null, null));
 
             taskRepository.save(new Task(
-                    null, "Study for Midterm",
+                    null, false, "Study for Midterm",
                     "Review chapters 1-5",
                     false, Task.Priority.HIGH, null, null));
 
             taskRepository.save(new Task(
-                    null, "Buy groceries",
+                    null, false, "Buy groceries",
                     "Milk, eggs, bread",
                     true, Task.Priority.LOW, null, null));
         }

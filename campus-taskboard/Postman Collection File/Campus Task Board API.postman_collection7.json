@@ -29,7 +29,19 @@
       "name": "1- GET All Tasks",
       "request": {
         "method": "GET",
-        "header": []
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/tasks",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "tasks"
+          ]
+        }
       },
       "response": []
     },
@@ -209,7 +221,7 @@
       "response": []
     },
     {
-      "name": "8- GET completed",
+      "name": "8- GET complete",
       "protocolProfileBehavior": {
         "disableBodyPruning": true
       },
@@ -243,7 +255,7 @@
       "response": []
     },
     {
-      "name": "9- GET incompleted",
+      "name": "9- GET incomplete",
       "request": {
         "method": "GET",
         "header": [],
@@ -280,6 +292,26 @@
             "tasks",
             "priority",
             "HIGH"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "11 - PUT restore",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "url": {
+          "raw": "PUT /api/tasks/{id}/restore",
+          "host": [
+            "PUT "
+          ],
+          "path": [
+            "api",
+            "tasks",
+            "{id}",
+            "restore"
           ]
         }
       },
